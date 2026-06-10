@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileText, PenSquare } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const NAV_ITEMS = [
   {
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <aside className="flex w-60 flex-col border-r border-neutral-200 bg-white">
@@ -42,7 +44,11 @@ export function AdminSidebar() {
         <ul className="space-y-1" role="list">
           {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const isActive =
-              pathname === href || pathname.startsWith(`${href}/`);
+              href === "/posts"
+                ? pathname === "/posts" ||
+                  (pathname.startsWith("/posts/") &&
+                    !pathname.startsWith("/posts/new"))
+                : pathname === href || pathname.startsWith(`${href}/`);
 
             return (
               <li key={href}>
@@ -68,9 +74,11 @@ export function AdminSidebar() {
         </ul>
       </nav>
 
-      {/* Bottom - User info placeholder */}
+      {/* Bottom - User info */}
       <div className="border-t border-neutral-200 px-4 py-4">
-        <p className="truncate text-xs text-neutral-400">Kenneth Balino</p>
+        <p className="truncate text-xs text-neutral-400">
+          {user?.displayName ?? user?.email ?? "Admin"}
+        </p>
       </div>
     </aside>
   );

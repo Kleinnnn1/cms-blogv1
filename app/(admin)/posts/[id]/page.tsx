@@ -1,33 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { PostForm } from "@/components/admin/PostForm";
-import { createPost } from "@/lib/firebase/firestore";
-import { generateExcerpt } from "@/lib/utils";
+import { usePost } from "@/hooks/usePost";
+import { updatePost } from "@/lib/firebase/firestore";
+import { Spinner } from "@/components/ui/Spinner";
 import type { PostFormValues } from "@/lib/validations";
 
-export default function NewPostPage() {
+export default function EditPostPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { post, loading, error } = usePost(id);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(values: PostFormValues) {
     setIsSubmitting(true);
     try {
-      await createPost({
-        title: values.title,
-        slug: values.slug,
-        content: values.content,
-        excerpt: values.excerpt || generateExcerpt(values.content),
-        coverImage: values.coverImage,
-        tags: values.tags,
-        status: values.status,
-      });
+      await updatePost(id, values);
       router.push("/posts");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  return <PostForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />;
+  if (loading)
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner />
+      </div>
+    );
+  if (error || !post)
+    return (
+      <p className="py-16 text-center text-sm text-red-500">
+        {error ?? "Post not found."}
+      </p>
+    );
+
+  return (
+    <PostForm
+      initialData={post}
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+    />
+  );
 }

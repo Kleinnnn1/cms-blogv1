@@ -1,76 +1,69 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { PostCard } from "@/components/blog/PostCard";
-import { TagFilter } from "@/components/blog/TagFilter";
+import { use } from "react";
+import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getPostBySlug } from "@/lib/firebase/firestore";
+import { PostContent } from "@/components/blog/PostContent";
 import { Spinner } from "@/components/ui/Spinner";
-import { usePosts } from "@/hooks/usePosts";
+import { formatDate } from "@/lib/utils";
+import type { Post } from "@/types";
 
-export default function BlogPage() {
-  const { posts, loading, error } = usePosts();
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+export default function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const published = useMemo(
-    () => posts.filter((p) => p.status === "published"),
-    [posts],
-  );
+  useEffect(() => {
+    getPostBySlug(slug).then((data) => {
+      setPost(data);
+      setLoading(false);
+    });
+  }, [slug]);
 
-  const allTags = useMemo(
-    () => [...new Set(published.flatMap((p) => p.tags))].sort(),
-    [published],
-  );
-
-  const filtered = useMemo(
-    () =>
-      selectedTag
-        ? published.filter((p) => p.tags.includes(selectedTag))
-        : published,
-    [published, selectedTag],
-  );
+  if (loading)
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner />
+      </div>
+    );
+  if (!post) return notFound();
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
-      {/* Header */}
-      <div className="mb-12">
+      <div className="mb-10 space-y-4">
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {post.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
         <h1 className="font-display text-4xl font-bold text-neutral-900">
-          Blog
+          {post.title}
         </h1>
-        <p className="mt-3 text-neutral-500">
-          Thoughts on software development, tech, and everything in between.
-        </p>
-      </div>
-
-      {/* Tag filter */}
-      {allTags.length > 0 && (
-        <div className="mb-10">
-          <TagFilter
-            tags={allTags}
-            selected={selectedTag}
-            onChange={setSelectedTag}
+        {post.excerpt && (
+          <p className="text-lg text-neutral-500">{post.excerpt}</p>
+        )}
+        <p className="text-sm text-neutral-400">{formatDate(post.createdAt)}</p>
+        {post.coverImage && (
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="w-full rounded-xl object-cover"
           />
-        </div>
-      )}
-
-      {/* Posts */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Spinner />
-        </div>
-      ) : error ? (
-        <p className="py-16 text-center text-sm text-red-500">{error}</p>
-      ) : filtered.length === 0 ? (
-        <p className="py-16 text-center text-sm text-neutral-500">
-          {selectedTag
-            ? `No posts tagged "${selectedTag}".`
-            : "No posts published yet."}
-        </p>
-      ) : (
-        <div>
-          {filtered.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+        )}
+      </div>
+      <PostContent content={post.content} />
     </div>
   );
 }
