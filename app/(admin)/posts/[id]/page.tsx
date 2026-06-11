@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { PostForm } from "@/components/admin/PostForm";
 import { usePost } from "@/hooks/usePost";
@@ -13,6 +13,10 @@ export default function EditPostPage() {
   const router = useRouter();
   const { post, loading, error } = usePost(id);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (post) document.title = `Edit: ${post.title} | TopicHub`;
+  }, [post]);
 
   async function handleSubmit(values: PostFormValues) {
     setIsSubmitting(true);

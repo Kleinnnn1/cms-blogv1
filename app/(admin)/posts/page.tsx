@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePosts } from "@/hooks/usePosts";
 import { deletePost } from "@/lib/firebase/firestore";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -18,6 +18,10 @@ export default function PostsPage() {
   const [filter, setFilter] = useState<FilterStatus>("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmPost, setConfirmPost] = useState<Post | null>(null);
+
+  useEffect(() => {
+    document.title = "Posts | TopicHub";
+  }, []);
 
   const filtered =
     filter === "all" ? posts : posts.filter((p) => p.status === filter);

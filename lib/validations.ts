@@ -17,7 +17,7 @@ export const postSchema = z.object({
 
   content: z.string().min(1, "Content is required"),
 
-  excerpt: z.string().max(160, "Excerpt must be 160 characters or less"),
+  // excerpt: z.string().max(160, "Excerpt must be 160 characters or less"),
 
   coverImage: z.string().url("Must be a valid URL").nullable(),
 

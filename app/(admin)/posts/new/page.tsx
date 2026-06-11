@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PostForm } from "@/components/admin/PostForm";
 import { createPost } from "@/lib/firebase/firestore";
@@ -12,6 +12,10 @@ export default function NewPostPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    document.title = "New Post | TopicHub";
+  }, []);
 
   async function handleSubmit(values: PostFormValues) {
     if (!user) return;

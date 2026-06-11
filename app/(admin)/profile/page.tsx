@@ -14,6 +14,10 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
+    document.title = "Profile | TopicHub";
+  }, []);
+
+  useEffect(() => {
     if (!user) return;
     getUserProfile(user.uid).then((profile) => {
       if (profile) {

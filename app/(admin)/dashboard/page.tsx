@@ -13,6 +13,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { posts, loading } = usePosts();
@@ -22,6 +23,10 @@ export default function DashboardPage() {
   const publishedPosts = posts.filter((p) => p.status === "published").length;
   const draftPosts = posts.filter((p) => p.status === "draft").length;
   const recentPosts = posts.slice(0, 5);
+
+  useEffect(() => {
+    document.title = "Dashboard | TopicHub";
+  }, []);
 
   const stats = [
     {
